@@ -5,6 +5,7 @@ namespace TalkingBit\Csv\Tests\Reader\Mapper;
 
 use PHPUnit\Framework\TestCase;
 use TalkingBit\Csv\Reader\Mapper\AssocMapper;
+use TalkingBit\Csv\Reader\Mapper\NoHeadersFound;
 
 class AssocMapperTest extends TestCase
 {
@@ -19,4 +20,18 @@ class AssocMapperTest extends TestCase
 
         $this->assertEquals($expected, $mapper->map($line, $headers));
     }
+
+    public function testShouldRequireHeaders(): void
+    {
+        $mapper = new AssocMapper();
+
+        $line = ['a', 'b', '123'];
+        $headers = null;
+
+        $this->expectException(NoHeadersFound::class);
+        $mapper->map($line, $headers);
+
+
+    }
+
 }

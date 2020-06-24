@@ -3,7 +3,7 @@ declare (strict_types=1);
 
 namespace TalkingBit\Csv\Reader\Mapper;
 
-class DtoMapper implements RowMapperInterface
+class DtoMapper extends RowMapper
 {
     private $dtoClass;
 
@@ -14,7 +14,8 @@ class DtoMapper implements RowMapperInterface
 
     public function map(array $line, ?array $headers = null)
     {
-        $row = array_combine($headers, $line);
+        $this->assertHeaders($headers);
+        $row = $this->buildRow($headers, $line);
         $serializedStdClass = $this->convertIntoSerializedStdClass($row);
 
         return $this->deserializeToDesiredDto($serializedStdClass);
@@ -31,6 +32,6 @@ class DtoMapper implements RowMapperInterface
 
         $serializedDto = preg_replace('/^O:8:"stdClass":/', $replacement, $serializedStdClass);
 
-        return unserialize($serializedDto);
+        return unserialize($serializedDto, [$this->dtoClass]);
     }
 }
