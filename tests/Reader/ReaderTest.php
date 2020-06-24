@@ -24,7 +24,8 @@ class ReaderTest extends TestCase
     public function testShouldFailIfTargetFileIsNotDefined(): void
     {
         $this->expectException(NoTargetFileDefined::class);
-        $rows = $this->reader->readAll();
+        $rows = $this->reader
+            ->readAll();
         $this->assertCount(0, $rows);
     }
 
@@ -41,8 +42,8 @@ class ReaderTest extends TestCase
     public function testShouldManageEmptyFile(): void
     {
         $file = vfsStream::newFile('empty.csv')
-                            ->at($this->fileSystem)
-                            ->setContent("");
+                         ->at($this->fileSystem)
+                         ->setContent("");
         $rows = $this->reader
             ->fromFile($file->url())
             ->readAll();
@@ -52,8 +53,8 @@ class ReaderTest extends TestCase
     public function testShouldManageOneLine(): void
     {
         $file = vfsStream::newFile('one_line.csv')
-                            ->at($this->fileSystem)
-                            ->setContent("123;My Name");
+                         ->at($this->fileSystem)
+                         ->setContent("123,My Name");
         $rows = $this->reader
             ->fromFile($file->url())
             ->readAll();
@@ -63,8 +64,8 @@ class ReaderTest extends TestCase
     public function testShouldReadOneLine(): void
     {
         $file = vfsStream::newFile('one_line.csv')
-    ->at($this->fileSystem)
-    ->setContent("123;My Name");
+                         ->at($this->fileSystem)
+                         ->setContent("123,My Name");
         $rows = $this->reader
             ->fromFile($file->url())
             ->readAll();
@@ -74,10 +75,12 @@ class ReaderTest extends TestCase
     public function testShouldManageMultipleLines(): void
     {
         $file = vfsStream::newFile('multiline.csv')
-    ->at($this->fileSystem)
-    ->setContent(
-            "123;My Name\n456;Other name\n789;Last Name"
-        );
+                         ->at($this->fileSystem)
+                         ->setContent(
+                             '123,My Name' . PHP_EOL .
+                             '456,Other name' . PHP_EOL .
+                             '789,Last Name'
+                         );
         $rows = $this->reader
             ->fromFile($file->url())
             ->readAll();
@@ -87,8 +90,8 @@ class ReaderTest extends TestCase
     public function testShouldManageHeaders(): void
     {
         $file = vfsStream::newFile('only_headers.csv')
-                ->at($this->fileSystem)
-                ->setContent("id;name");
+                         ->at($this->fileSystem)
+                         ->setContent("id,name");
         $rows = $this->reader
             ->fromFile($file->url())
             ->withHeaders()
@@ -99,10 +102,11 @@ class ReaderTest extends TestCase
     public function testShouldReadLinesWithHeaders(): void
     {
         $file = vfsStream::newFile('one_line_with_headers.csv')
-                            ->at($this->fileSystem)
-                            ->setContent(
-            "id;name\n123;My Name"
-        );
+                         ->at($this->fileSystem)
+                         ->setContent(
+                             'id,name' . PHP_EOL .
+                             '123,My Name'
+                         );
         $rows = $this->reader
             ->withHeaders()
             ->fromFile($file->url())
@@ -113,10 +117,11 @@ class ReaderTest extends TestCase
     public function testShouldPrioritizeExplicitMapper(): void
     {
         $file = vfsStream::newFile('one_line_with_headers.csv')
-                            ->at($this->fileSystem)
-                            ->setContent(
-            "id;name\n123;My Name"
-        );
+                         ->at($this->fileSystem)
+                         ->setContent(
+                             'id,name' . PHP_EOL .
+                             '123,My Name'
+                         );
         $rows = $this->reader
             ->withHeaders()
             ->usingMapper(new ArrayMapper())
@@ -128,12 +133,15 @@ class ReaderTest extends TestCase
     public function testShouldAllowConfigureDelimiter(): void
     {
         $file = vfsStream::newFile('comma_delimited.csv')
-            ->at($this->fileSystem)
-            ->setContent("id,name\n123,My Name");
+                         ->at($this->fileSystem)
+                         ->setContent(
+                             'id,name' . PHP_EOL .
+                             '123,My Name'
+                         );
         $rows = $this->reader
+            ->fromFile($file->url())
             ->withDelimiter(',')
             ->withHeaders()
-            ->fromFile($file->url())
             ->readAll();
         $this->assertEquals(['id' => '123', 'name' => 'My Name'], $rows->current());
     }
@@ -141,12 +149,15 @@ class ReaderTest extends TestCase
     public function testShouldAllowConfigureEnclosure(): void
     {
         $file = vfsStream::newFile('with_enclosure.csv')
-            ->at($this->fileSystem)
-            ->setContent("id;name\n123;'My Name'");
+                         ->at($this->fileSystem)
+                         ->setContent(
+                             'id,name' . PHP_EOL .
+                             '123,\'My Name\''
+                         );
         $rows = $this->reader
+            ->fromFile($file->url())
             ->withEnclosure('\'')
             ->withHeaders()
-            ->fromFile($file->url())
             ->readAll();
         $this->assertEquals(['id' => '123', 'name' => 'My Name'], $rows->current());
     }

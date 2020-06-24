@@ -3,43 +3,37 @@ declare (strict_types=1);
 
 namespace TalkingBit\Csv\Writer;
 
-use SplFileObject;
+use TalkingBit\Csv\Shared\CSVFile;
+use TalkingBit\Csv\Shared\CSVSettings;
 use TalkingBit\Csv\Shared\NoTargetFileDefined;
 
 class Writer
 {
-    /** @var SplFileObject */
+    /** @var CSVFile */
     private $targetFile;
-    private $delimiter = ',';
-    private $enclosure = '"';
     private $firstRow = true;
 
     public function writeRow($row): void
     {
-        $this->assertFileForWriting();
-        $this->targetFile->setCsvControl(
-            $this->delimiter,
-            $this->enclosure
-        );
-        if (is_object($row)) {
-            $row = (array)$row;
+        $this->assertCSVFile();
+
+        $row = (array)$row;
+
+        if ($this->firstRow && ! is_numeric(key($row))) {
+            $this->writeHeaders($row);
         }
-        if ($this->firstRow && !is_numeric(key($row))) {
-            $headers = array_keys($row);
-            $this->targetFile->fputcsv($headers);
-            $this->firstRow = false;
-        }
-        $this->targetFile->fputcsv($row);
+
+        $this->targetFile->write($row);
     }
 
     public function toFile(string $pathToFile): self
     {
-        $this->targetFile = new SplFileObject($pathToFile, 'w');
+        $this->targetFile = CSVFile::forWriting($pathToFile);
 
         return $this;
     }
 
-    private function assertFileForWriting(): void
+    private function assertCSVFile(): void
     {
         if (null === $this->targetFile) {
             throw NoTargetFileDefined::forWriting();
@@ -48,15 +42,22 @@ class Writer
 
     public function withDelimiter(string $delimiter): self
     {
-        $this->delimiter = $delimiter;
+        $this->targetFile->setDelimiter($delimiter);
 
         return $this;
     }
 
     public function withEnclosure(string $enclosure): self
     {
-        $this->enclosure = $enclosure;
+        $this->targetFile->setEnclosure($enclosure);
 
         return $this;
+    }
+
+    private function writeHeaders(array $row): void
+    {
+        $headers = array_keys($row);
+        $this->targetFile->write($headers);
+        $this->firstRow = false;
     }
 }

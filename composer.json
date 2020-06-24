@@ -25,5 +25,8 @@
         "psr-4": {
             "TalkingBit\\Csv\\Tests\\": "tests/"
         }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit tests"
     }
 }

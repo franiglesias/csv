@@ -3,10 +3,10 @@ declare (strict_types=1);
 
 namespace TalkingBit\Csv\Reader\Mapper;
 
-use TalkingBit\Csv\Tests\Reader\Mapper\Dto\RowDto;
-
 class DtoMapper implements RowMapperInterface
 {
+    private $dtoClass;
+
     public function __construct($dtoClass)
     {
         $this->dtoClass = $dtoClass;

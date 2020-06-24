@@ -4,39 +4,31 @@ declare (strict_types=1);
 namespace TalkingBit\Csv\Reader;
 
 use Generator;
-use RuntimeException;
 use SplFileObject;
 use TalkingBit\Csv\Reader\Mapper\ArrayMapper;
 use TalkingBit\Csv\Reader\Mapper\AssocMapper;
+use TalkingBit\Csv\Reader\Mapper\RowMapperInterface;
+use TalkingBit\Csv\Shared\CSVFile;
 use TalkingBit\Csv\Shared\NoTargetFileDefined;
 
 class Reader
 {
-    private $useHeaders = false;
-    private $mapper;
-    private $delimiter = ';';
-    private $enclosure = '"';
+    /** @var CSVFile */
     private $targetFile;
+    /** @var RowMapperInterface */
+    private $mapper;
+    private $useHeaders = false;
 
     public function readAll(): Generator
     {
-        if (null === $this->targetFile) {
-            throw NoTargetFileDefined::forReading();
-        }
-
-        $this->targetFile->setFlags(SplFileObject::READ_CSV);
-        $this->targetFile->setFlags(SplFileObject::SKIP_EMPTY);
-        $this->targetFile->setCsvControl(
-            $this->delimiter,
-            $this->enclosure
-        );
-
-        $headers = null;
+        $this->assertCSVFile();
 
         $this->obtainMapper();
 
+        $headers = null;
+
         while ($this->targetFile->valid()) {
-            $line = $this->targetFile->fgetcsv();
+            $line = $this->targetFile->read();
             if ($this->useHeaders) {
                 $headers = $line;
                 $this->useHeaders = false;
@@ -50,21 +42,9 @@ class Reader
 
     public function fromFile(string $pathToFile): self
     {
-        $this->targetFile = $this->obtainFile($pathToFile);
+        $this->targetFile = CSVFile::forReading($pathToFile);
 
         return $this;
-    }
-
-    private function obtainFile(
-        string $file
-    ): SplFileObject {
-        try {
-            $splFileObject = new SplFileObject($file);
-        } catch (RuntimeException $fileNotFound) {
-            throw CSVFileNotFound::failedPath($file);
-        }
-
-        return $splFileObject;
     }
 
     private function obtainMapper(): void
@@ -90,15 +70,26 @@ class Reader
 
     public function withDelimiter(string $delimiter): self
     {
-        $this->delimiter = $delimiter;
+        $this->assertCSVFile();
+
+        $this->targetFile->setDelimiter($delimiter);
 
         return $this;
     }
 
     public function withEnclosure(string $enclosure): self
     {
-        $this->enclosure = $enclosure;
+        $this->assertCSVFile();
+
+        $this->targetFile->setEnclosure($enclosure);
 
         return $this;
+    }
+
+    private function assertCSVFile(): void
+    {
+        if (null === $this->targetFile) {
+            throw NoTargetFileDefined::forReading();
+        }
     }
 }
