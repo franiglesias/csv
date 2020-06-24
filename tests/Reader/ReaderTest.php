@@ -90,8 +90,8 @@ class ReaderTest extends TestCase
                 ->at($this->fileSystem)
                 ->setContent("id;name");
         $rows = $this->reader
-            ->withHeaders()
             ->fromFile($file->url())
+            ->withHeaders()
             ->readAll();
         $this->assertCount(0, $rows);
     }
