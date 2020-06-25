@@ -5,13 +5,15 @@ namespace TalkingBit\Csv\Reader\Mapper;
 
 class DtoMapper extends RowMapper
 {
+    /** @var string  */
     private $dtoClass;
 
-    public function __construct($dtoClass)
+    public function __construct(string $dtoClass)
     {
         $this->dtoClass = $dtoClass;
     }
 
+    /** @return mixed */
     public function map(array $line, ?array $headers = null)
     {
         $this->assertHeaders($headers);

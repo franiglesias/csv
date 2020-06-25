@@ -4,15 +4,16 @@ declare (strict_types=1);
 namespace TalkingBit\Csv\Writer;
 
 use TalkingBit\Csv\Shared\CSVFile;
-use TalkingBit\Csv\Shared\CSVSettings;
 use TalkingBit\Csv\Shared\NoTargetFileDefined;
 
 class Writer
 {
     /** @var CSVFile */
     private $targetFile;
+    /** @var bool */
     private $firstRow = true;
 
+    /** @param array<mixed> $row */
     public function writeRow($row): void
     {
         $this->assertCSVFile();
@@ -54,6 +55,9 @@ class Writer
         return $this;
     }
 
+    /**
+     * @param array<mixed> $row
+     */
     private function writeHeaders(array $row): void
     {
         $headers = array_keys($row);
